@@ -6,12 +6,19 @@ BASE_URL = f"http://127.0.0.1:{PORT}"
 IMAGES_FOLDER = "test images"
 
 def upload_image(image_path):
+    if not os.path.exists(image_path):
+        print(f"! Error: File {image_path} does not exist.")
+        return {"error": "File does not exist"}
+    
     print(f"+ Uploading: {image_path.ljust(20)}")
     with open(image_path, "rb") as img:
         files = {"image": img}
         response = requests.post(f"{BASE_URL}/upload", files=files)
     result = response.json()
-    print(f": Response: {result['image_id']}")
+    if "image_id" in result:
+        print(f": Response: {result['image_id']}")
+    else:
+        print(f"! Error: {result}")
     return result
 
 def get_image(image_id, output_path):
@@ -49,3 +56,13 @@ if __name__ == "__main__":
         input("* Press Enter to fetch dog.png...")
         print("\n")
         get_image(dog_id, "downloaded_dog.png")
+    
+    input("* Press Enter to attempt invalid upload...")
+    print("\n")
+    invalid_path = os.path.join(IMAGES_FOLDER, "non_existent.jpg")
+    upload_image(invalid_path)
+    
+    input("* Press Enter to attempt invalid download...")
+    print("\n")
+    invalid_image_id = "invalid_id_1234"
+    get_image(invalid_image_id, "invalid_download.jpg")
